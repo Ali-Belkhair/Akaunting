@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\Register;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -21,8 +22,8 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('reset', 'Auth\Reset@store')->name('reset.store');
 
     // Route::get('register/{token}', 'Auth\Register@create')->name('register');
-    Route::get('register', 'Auth\Register@create')->name('register');
-    Route::post('register', 'Auth\Register@store')->name('register.store');
+    // Route::get('register', 'Auth\Register@create')->name('register');
+    // Route::post('register', 'Auth\Register@store')->name('register.store');
 });
 
 Route::get('/', function () {

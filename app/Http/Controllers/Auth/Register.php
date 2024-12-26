@@ -14,6 +14,7 @@ use App\Http\Requests\Auth\Register as Request;
 use App\Utilities\Installer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 class Register extends Controller
 {
@@ -52,76 +53,60 @@ class Register extends Controller
      * @return \Illuminate\Http\RedirectResponse
      */
 
-    public function store(Request $request)
-    {
-        dump('Store Function');
+     public function store(Request $request)
+     {
+         try {
+             $validated = $request->validate([
+                 'company_name'  => 'required|string|max:255',
+                 'company_email' => 'required|email|max:255|unique:companies,email',
+                //  'email'         => 'required|email|max:255|unique:users,email',
+                 'user_password' => 'required|string|min:8',
+             ]);
+         } catch (\Illuminate\Validation\ValidationException $e) {
+             return redirect()->back()->withErrors($e->errors());
+         }
+     
+         try {
+             DB::transaction(function () use ($request, $validated) {
+                 // Create the company
+                 $company = Company::create([
+                     'name'  => $request->input('company_name'),
+                 ]);
+     
+                 // Create an admin user for the company
+                 $user = User::create([
+                     'name'       => 'Admin',
+                     'email'      => $request->input('email'),
+                     'password'   => Hash::make($request->input('user_password')),
+                     'company_id' => $company->id,
+                 ]);
 
-        $request->validate([
-            'company_name' => 'required|string|max:255',
-            'company_email' => 'required|email|max:255|unique:companies,email',
-            'email' => 'required|email|max:255|unique:users,email',
-            'user_password' => 'required|string|min:6',
-        ]);
-
-        try {
-            DB::transaction(function () use ($request) {
-                // Create the company
-                $company = Company::create([
-                    'name'  => $request->input('company_name'),
-                    'email' => $request->input('company_email'),
+                 
+                 // Seed default data for the company
+                 Artisan::call('db:seed', ['--class' => 'Database\\Seeds\\Accounts', '--company' => $company->id]);
+                 Artisan::call('db:seed', ['--class' => 'Database\\Seeds\\Categories', '--company' => $company->id]);
+                 Artisan::call('db:seed', ['--class' => 'Database\\Seeds\\Currencies', '--company' => $company->id]);
+                 Artisan::call('db:seed', ['--class' => 'Database\\Seeds\\EmailTemplates', '--company' => $company->id]);
+                 Artisan::call('db:seed', ['--class' => 'Database\\Seeds\\Modules', '--company' => $company->id]);
+                 Artisan::call('db:seed', ['--class' => 'Database\\Seeds\\Reports', '--company' => $company->id]);
+                 
+                //  $email = $request->input('company_email'); // Get email from the form
+                 Artisan::call('db:seed', [
+                    '--class' => 'Database\\Seeds\\Settings',
+                    '--company' => $company->id,
                 ]);
-
-                // Create the admin user
-                $user = User::create([
-                    'name'       => 'Admin',
-                    'email'      => $request->input('email'),
-                    'password'   => Hash::make($request->input('user_password')),
-                    'company_id' => $company->id, // Assuming `users` has a `company_id` foreign key
-                ]);
-
-                // Fire the Registered event
-                event(new Registered($user));
-            });
-
-            return redirect()->route('login')->with('success', 'Registration successful! You can now log in.');
-
-
-        } catch (\Exception $e) {
-            Log::error('Registration error: ' . $e->getMessage());
-
-            return redirect()->back()->withErrors([
-                'error' => 'An error occurred during registration. Please try again later.',
-            ]);
-        }
-    }
-
-    /**
-     * Create a new user instance after a valid registration.
-     *
-     * @param  array  $data
-     * @return User
-     */
-    protected function createUser(array $data)
-    {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
-    }
-
-    /**
-     * Define validation rules for registration
-     *
-     * @return array
-     */
-    public function rules()
-    {
-        return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-        ];
-    }
+            
+                 // Fire the registered event
+                 event(new Registered($user));
+             });
+     
+             return redirect()->route('login')->with('success', 'Company and admin user created successfully!');
+         } catch (\Exception $e) {
+             Log::error('Error while creating company: ' . $e->getMessage());
+     
+             return redirect()->back()->withErrors([
+                 'error' => 'An error occurred during the registration process. Please try again.',
+             ]);
+         }
+     }
 }
-

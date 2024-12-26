@@ -24,8 +24,7 @@ class Register extends FormRequest
     public function rules()
     {
         return [
-            'token' => 'required|uuid|string|max:255',
-            'password' => 'required|string|confirmed',
+            'user_password' => 'required|string',
         ];
     }
 }

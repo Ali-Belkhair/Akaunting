@@ -24,12 +24,13 @@
             v-cloak
         ></div>
 
-        <x-form id="auth" route="register.store">
+        <x-form id="auth" route="register.store" method="POST" >
+            @csrf
             <div class="grid sm:grid-cols-6 gap-x-8 gap-y-6 my-3.5 lg:h-120">
                 
                 <x-form.group.text name="company_name" label="Company Name" form-group-class="sm:col-span-6" />
                 
-                <x-form.group.text name="company_email" label="Company Email"  form-group-class="sm:col-span-6" />
+                {{-- <x-form.group.text name="company_email" label="Company Email"  form-group-class="sm:col-span-6" /> --}}
                 
                 <x-form.group.text name="email" label="Admin Email"  form-group-class="sm:col-span-6" />
 

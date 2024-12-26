@@ -24,6 +24,7 @@ class Settings extends Seeder
     private function create()
     {
         $company_id = $this->command->argument('company');
+        // $email = $this->command->argument('email'); // Retrieve the email from the arguments
 
         $offline_payments = [
             [
@@ -46,6 +47,7 @@ class Settings extends Seeder
             'invoice.title'                     => trans_choice('general.invoices', 1),
             'wizard.completed'                  => '0',
             'offline-payments.methods'          => json_encode($offline_payments),
+            // 'company.email'                     => $email, // Set the email dynamically
         ]);
     }
 }
