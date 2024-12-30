@@ -55,11 +55,14 @@ class Register extends Controller
 
      public function store(Request $request)
      {
+        
+        //dd("Hello");
+
+
          try {
              $validated = $request->validate([
                  'company_name'  => 'required|string|max:255',
                  'company_email' => 'required|email|max:255|unique:companies,email',
-                //  'email'         => 'required|email|max:255|unique:users,email',
                  'user_password' => 'required|string|min:8',
              ]);
          } catch (\Illuminate\Validation\ValidationException $e) {
@@ -68,6 +71,7 @@ class Register extends Controller
      
          try {
              DB::transaction(function () use ($request, $validated) {
+
                  // Create the company
                  $company = Company::create([
                      'name'  => $request->input('company_name'),
@@ -98,6 +102,9 @@ class Register extends Controller
             
                  // Fire the registered event
                  event(new Registered($user));
+
+                // return redirect()->route('login')->with('success', 'Company and admin user created successfully!');
+
              });
      
              return redirect()->route('login')->with('success', 'Company and admin user created successfully!');

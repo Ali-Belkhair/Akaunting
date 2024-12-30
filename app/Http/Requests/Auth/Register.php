@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Requests\Auth;
-
 use Illuminate\Foundation\Http\FormRequest;
 
 class Register extends FormRequest
@@ -15,7 +14,6 @@ class Register extends FormRequest
     {
         return true;
     }
-
     /**
      * Get the validation rules that apply to the request.
      *
