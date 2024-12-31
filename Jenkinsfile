@@ -1,15 +1,14 @@
 pipeline {
     agent any
     environment {
-    DOCKER_REGISTRY = 'docker.io'                                 // Registre Docker (Docker Hub)
-    DOCKER_IMAGE = 'alibelkhaircontact1/akauting_app'             // Nom de l'image dans Docker Hub
-    DOCKER_CREDENTIALS_ID = 'Docker_token'                      // ID des credentials Jenkins pour Docker Hub
+    DOCKER_REGISTRY = 'docker.io'                                 
+    DOCKER_IMAGE = 'alibelkhaircontact1/akauting_app'             
+    DOCKER_CREDENTIALS_ID = 'Docker_token'                     
   }
 
     stages {
         stage('SCM') {
             steps {
-                // Récupérer le code source depuis le dépôt SCM
                 checkout scm
             }
         }
@@ -25,10 +24,9 @@ pipeline {
         }
         stage('OWASP Dependency-Check Analysis') {
             steps {
-                // Exécute l'analyse OWASP Dependency-Check
                 dependencyCheck additionalArguments: '--scan ./ --out ./dependency-check-report', odcInstallation: 'dependency-check'
 
-                // Publie les résultats de l'analyse sous forme de rapport XML
+
                 dependencyCheckPublisher pattern: 'dependency-check-report/dependency-check-report.xml'
             }
       
@@ -38,9 +36,9 @@ pipeline {
       steps {
         echo 'Building Docker image...'
         script {
-          def imageName = "${DOCKER_IMAGE}:${env.BUILD_NUMBER}"  // Tag basé sur le numéro de build
+          def imageName = "${DOCKER_IMAGE}:${env.BUILD_NUMBER}"  
           docker.build(imageName)
-          env.DOCKER_IMAGE_TAG = imageName                      // Stocker le tag pour réutilisation
+          env.DOCKER_IMAGE_TAG = imageName                     
         }
       }
     }
